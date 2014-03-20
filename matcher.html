@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<!-- by Paweł Kubiak 19/03/2014 -->
+<html>
+<head>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+	<script src="https://s3-eu-west-1.amazonaws.com/svgjs/svg.js"></script>
+<style type="text/css">
+#quiz{vertical-align:base-line;}
+
+#left, #right, #links{display:inline-block;vertical-align:middle;position:relative;}
+#left{width:200px;overflow:hidden;z-index:2}
+#right{width:200px;overflow:hidden;}
+#links{width:100px;margin-left:-12px;margin-right:-10px;top:0;bottom:0;position:relative;z-index:0;}
+#left, #right{list-style-type:none;		margin:0;padding:0;}
+#left li, #right li{display:block;text-align:right;font-size:14pt;padding:8px;border:1px solid #ccc;margin:12px;position:relative;padding-right:14px;}
+
+#left li:after{content:"";display:block;width:10px;height:10px;border:4px solid black;position:absolute;top:calc(50% - 9px);border-radius:10px;right:-10px;background:white;}
+
+#left li:nth-child(5n+1), .c1{background:#DF151A !important;color:white !important;}
+#left li:nth-child(5n+1):after, .c1:before{border-color:#DF151A !important;}
+
+#left li:nth-child(5n+2), .c2{background:#FD8603 !important;}
+#left li:nth-child(5n+2):after, .c2:before{border-color:#FD8603 !important;}
+
+#left li:nth-child(5n+3), .c3{background:#F4F328 !important;}
+#left li:nth-child(5n+3):after, .c3:before{border-color:#F4F328 !important;}
+
+#left li:nth-child(5n+4), .c4{background:#00DA3C !important;color:white !important;}
+#left li:nth-child(5n+4):after, .c4:before{border-color:#00DA3C !important;}
+
+#left li:nth-child(5n+5), .c5{background:#00CBE7 !important;color:white !important;}
+#left li:nth-child(5n+5):after, .c5:before{border-color:#00CBE7 !important;}
+
+#right li{background:#eee;text-align:left;padding-left:14px;}
+#right li:before{content:"";display:block;width:10px;height:10px;border:4px solid #ddd;position:absolute;top:calc(50% - 9px);border-radius:10px;left:-12px;background:white;}
+
+#quiz{border:1px solid black;display:inline-block;position:relative;margin:0 auto;margin-top:40px;}
+
+#links{width:140px;height:100%;height:260px;}
+body{text-align:center;}
+li:first-child{margin-top:6px !important; }
+li:last-child{margin-bottom:6px !important;}
+</style>
+<script>
+var left = undefined, right = undefined;
+var linesL = [], linesR = [], svg = null;
+var colors = ['#DF151A', '#FD8603', '#F4F328', '#00DA3C', '#00CBE7'];
+var tmpline = undefined;
+var currentQuiz = null;
+
+function dosvg(){
+	svg = SVG('links').size('100%', '100%');
+}
+
+function clearLines(a, b){
+	if(a != undefined && linesL[a] != undefined){
+		for(var i=0;i<linesR.length;i++)
+			if(linesR[i] == linesL[a]){
+				linesL[a].remove();
+				linesL[a] = linesR[i] = undefined;
+				$('#right li:nth-child('+(i+1)+')').attr('class', '');
+				break;
+			}
+	}
+	
+	if(b != undefined && linesR[b] != undefined){
+		for(var i=0;i<linesL.length;i++)
+			if(linesR[b] == linesL[i]){
+				linesL[i].remove();
+				$('#right li:nth-child('+(b+1)+')').attr('class', '');
+				linesL[i] = linesR[b] = undefined;
+				break;
+			}
+	}
+}
+
+function match(a, b){
+	console.log(a+' : '+b);
+	var step = 100.0/linesL.length;
+	
+	clearLines(a,b);
+	//$('#right li:nth-child('+(b+1)+')').css('background', colors[a]);
+	$('#right li:nth-child('+(b+1)+')').attr('class', 'c'+((a%5)+1));
+	
+	var l = svg.line(0, parseInt(a*step+0.5*step)+'%', '100%', parseInt(b*step+0.5*step)+'%').stroke({width: 4, color: colors[a%5]});
+	linesL[a] = linesR[b] = l;
+}
+function createMatch(data){
+	currentQuiz = data;
+	var id = 0;
+	lKey = []; rKey = [];
+	
+	for(var key in data){
+		lKey.push([Math.random(), key]);
+		rKey.push([Math.random(), data[key]]);
+	}
+	
+	lKey.sort();
+	rKey.sort();
+	
+	
+	for(var i=0;i<lKey.length;i++){
+		var li = $('<li></li>');
+		li.text(lKey[i][1]);
+		li.on('mousedown', function(x){
+			return function(){clearLines(x, undefined);left = x;};
+		}(i));
+		
+		li.on('mouseup', function(x){
+			return function(){if(right!= undefined)match(x, right);};
+		}(i));
+		
+		//li.append($('<input type="radio"/>'));
+		$('#left').append(li);
+	}
+	
+	for(var i=0;i<rKey.length;i++){
+		li = $('<li></li>');
+		li.text(rKey[i][1]);
+		li.on('mousedown', function(x){
+			return function(){clearLines(undefined, x);right = x;};
+		}(i));
+		li.on('mouseup', function(x){
+			return function(){if(left != undefined)match(left, x);};
+		}(i));
+		$('#right').append(li);
+		id++;
+	}
+	
+	linesL = new Array(id);
+	linesR = new Array(id);
+	dosvg();
+	
+	$('li').disableSelection();
+	$('ul').disableSelection();
+	$('#quiz').disableSelection();
+	
+	$('#quiz').on('mouseup', function(){
+		left = right = undefined
+		if(tmpline!=undefined){
+			tmpline.remove();
+			tmpline = undefined;
+		}});
+	
+	$('#quiz').on('mousemove', function(e){
+		if(tmpline != undefined)
+			tmpline.remove();
+		var c = document.getElementById('links');
+		var d = document.getElementById('quiz');
+		var step = 100.0/linesR.length;
+			
+		var tx = e.clientX+document.body.scrollLeft-d.offsetLeft-c.offsetLeft, ty = e.clientY+document.body.scrollTop-d.offsetTop-c.offsetTop;
+		console.log(tx, ty);
+		if(left != undefined){
+			
+			//var tx = -e.offsetX+c.offsetLeft, ty = e.offsetY-c.offsetTop
+			
+			if(tx>c.offsetWidth)tx = c.offsetWidth;
+			tmpline = svg.line(0, parseInt(left*step+0.5*step)+'%', tx, ty).stroke({width:4, color:colors[left%5], 'dasharray': '5,5'}); 
+		}
+		
+		if(right != undefined){
+			
+			if(tx < 0) tx = 0;
+			
+			tmpline = svg.line('100%', parseInt(right*step+0.5*step)+'%', tx, ty).stroke({width:4, color:'#ccc', 'dasharray': '5,5'}); 
+		}
+	});
+}
+
+function check(){
+	var score = 0;
+	for(var i = 0; i < lKey.length; i++)if(linesL[i] != undefined)
+		for(var j=0; j < rKey.length; j++)if(linesR[j] != undefined)
+			if(linesL[i] == linesR[j]){
+				if(currentQuiz[lKey[i][1]] == rKey[j][1])
+					score ++;
+			}
+	alert('Your score: '+score+'/'+lKey.length);
+}
+
+
+$(function(){
+	/*createMatch({
+		'2*5+10' : '20',
+		'2*2*2'  : '8',
+		'3-1*5'  : '-2',
+		'(1-2)*(5+9)': '-14',
+		'5!'     : '120'
+	});*/
+	
+	createMatch({
+		'Pythagorean':'theorem',
+		'Zorn\'s' : 'lemma',
+		'Peano' : 'axioms',
+		'Vandermonde\'s' : 'identity',
+		'Pigeonhole' : 'principle',
+		
+	});
+});
+</script>
+</head>
+<body>
+
+<div id="quiz"><h2 style="margin:10px 0;text-align:center">Matching Quiz</h2><ul id="left"></ul><div id="links"></div><ul id="right"></ul><br/><button onclick="check()" style="margin:15px auto;display:block">check</button></div>
+</body>
+</html>

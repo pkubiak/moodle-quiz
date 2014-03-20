@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+body{background:#fff;font-family:sans;color:black}
+#output-markup{width:100%;min-height:200px;box-sizing:border-box}
+#left-column, #right-column{}
+#left-column{background:#eee;border:1px solid #dcdcdc;padding:10px;width:40%;float:left;box-sizing:border-box;border-radius:2px}
+#right-column{background:#d9edf7;border:1px solid #bce8f1;width:59%;float:left;box-sizing:border-box;border-radius:4px;padding:5px;margin-left:1%;color:#333;text-shadow:0 1px 0 rgba(255,255,255,0.5)}
+#input-text{max-width:100%;box-sizing:border-box;margin:0;min-width:100%;min-height:300px;}
+#output-html{line-height:150%}
+#output-html input{border:2px inset #F4B1C3;border-radius:3px;}
+#output-html a{color:#333;text-decoration:none;}
+#output-html a:hover{text-decoration:underline;}
+#output-html a.selected{display:inline-block;border:1px solid #ccc;box-shadow:inset 0 1px 1px rgba(0,0,0,0.075);border-radius:4px;margin:2px;background:white;padding:4px 10px}
+/*##output-html span a{text-decoration:none;}
+#output-html span a:after{margin-left:4px;content:"×";background:black;color:white;font-size:80%;}*/
+</style>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script>
+var numberOfGaps = 0;
+
+function setNumberOfGaps(x){
+	numberOfGaps = x;
+	$('#gaps-count').text(x);
+}
+
+function updateMarkup(){
+	var markup = []
+	$('#output-html').contents().each(
+		function(){
+			if(this.nodeType == 3){
+				markup.push($(this).text());
+			}else
+			if(this.nodeType == 1){
+				if($(this).hasClass('selected'))
+					markup.push('{1:SHORTANSWER:='+$(this).text()+'}');
+					//console.log('<'+$(this).text()+'>');
+				else markup.push($(this).text());//console.log($(this).text());
+			}
+		}
+	);
+	
+	$('#output-markup').text(markup.join(''));
+}
+
+	
+function generate(){
+	var text = document.getElementById('input-text').value;
+	
+	var gaps = parseInt(document.getElementById('number-of-gaps').value);
+	console.log(gaps);
+	
+	//var r = /(?:\W|^)(\Q$word\E)(?:\W|$)/ig;
+	var r = /\b(\w+)\b/ig;
+	var w = [], selected = [];
+	var res = text.replace(r, function(match, p1, offset){
+		w.push(offset);
+	});
+	
+	console.log(w);
+	
+	if(w.length < gaps)
+		selected = w;
+	else{
+		for(var i = 0; i<gaps;i++){
+			var pos = Math.floor(Math.random()*w.length);
+			selected.push(w.splice(pos, 1)[0]);
+		}
+	}
+	
+	console.log(selected);
+	setNumberOfGaps(selected.length);
+	
+	var res = text.replace(r, function(match, p1, offset){
+		if(selected.indexOf(offset)!=-1)
+			return '<a href="javascript:void(0)" class="selected">'+p1+'</a>';
+		else return '<a href="javascript:void(0)">'+p1+'</a>';
+	});
+	
+	$('#output-html').html(res);
+	
+	$('#output-html a').click(function(){
+		if($(this).hasClass('selected'))setNumberOfGaps(numberOfGaps-1);
+		else setNumberOfGaps(numberOfGaps+1);
+		
+		$(this).toggleClass('selected');
+		
+		updateMarkup();
+	});
+	
+	updateMarkup();
+}
+
+function updateWords(){
+	var text = document.getElementById('input-text').value, r = /\b(\w+)\b/ig;
+	var ile = text.match(r).length;
+	$('#number-of-words').text(ile);
+}
+
+function show(data){
+	console.log(data);
+}
+
+
+function loadSource(){
+	var e = document.getElementById("sources");
+	var strUser = e.options[e.selectedIndex].value;
+	loadData(strUser);
+}
+
+</script>
+
+<script>
+function showwikinews(data){
+	//console.log(data);
+	for(var i in data.query.pages){
+		var p = data.query.pages[i];
+		var text = p.revisions[0]['*'];
+		
+		//text = text.replace(/\{\{([^\}]*)\}\}/mg, '$1');
+		console.log(text);
+		//text = text.replace(/\[\[([^\[]+)\|([^\[]+)\]\]/g, '[[$2]]');
+		//text = text.replace(/\[\[([^\[]+)\]\]/g, '$1');
+		
+		//console.log(text);
+	}
+}
+
+function loadData(type){
+	console.log(type);
+	if(type == 'wikinews'){
+		
+		var script = document.createElement('script');
+		script.src = "http://en.wikinews.org/w/api.php?action=query&prop=revisions&rvprop=content&format=json&utf8=&callback=showwikinews&titles=Winter_Paralympics_Opening_Ceremony_takes_place_in_Sochi";
+		document.body.appendChild(script);		
+	}
+}
+</script>
+
+</head>
+<body>
+<h1>Moodle Cloze Generator</h1>
+<div id="left-column">
+Load predefined text: <select id="sources">
+<option>---</option>
+<option value="wikinews">wikinews</option>
+<option>wikipedia</option>
+<option>BBC</option>
+</select> <button onclick="javascript:loadSource()">Load</button><br/>
+<hr/>
+Language: <select>
+	<option>English</option>
+	<option>Polish</option>
+</select><br/>
+Forbiden words: <input style="right:0px;width:auto"><br/>
+Minimal word length: <input size="4" id="minimal-word-length" value="0"  style="text-align:center"/><br/>
+Replace:
+<label><input type="checkbox">sasdsas</label> <label><input type="checkbox">Other words</label>
+<textarea id="input-text" placeholder="Insert your text here" onkeypress="javascript:updateWords()">The possibility for change and redemption are themes at the heart of the Christian understanding of what it means to be human – that whatever we have done; however misguided our motives; however appalling the impact of our actions, there is hope for us because God sees all and yet refuses to withhold his embrace, which is ours if only we can begin to recognize our responsibility for our actions and ask for help. So Jesus, crucified with two criminals either side of him, tells the one who acknowledges that he is being punished justly, that he will join him in paradise. 
+Some of our young Muslims are being formed in the belief that paradise will come to them through martyrdom and acts of jihad – even outside a battle zone. And whilst this may be incomprehensible reasoning to many of us, locking up those who act on such thoughts and throwing away the key may not resolve the cycle of violence. 
+</textarea>
+
+Number of gaps: <input size="4" id="number-of-gaps" value="20" style="text-align:center"/> / <span id="number-of-words">0</span><button style="float:right" onclick="javascript:generate()">Generate</button>
+</div>
+
+<div id="right-column">
+Number of gaps: <span id="gaps-count">0</span><br/><hr/>
+<div id="output-html"></div>
+</div>
+<hr style="clear:both;visibility:hidden">
+<h3>Output markup</h3>
+<textarea id="output-markup"></textarea>
+</body>
+</html>

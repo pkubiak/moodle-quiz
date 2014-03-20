@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<!-- by Paweł Kubiak 20/03/2014 -->
+<html>
+<head>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+<style type="text/css">
+#groups ul{
+	list-style-type:none;
+	margin: 10px;
+	padding: 0;
+	box-sizing:border-box;
+	width:calc(20% - 16px);
+	display:block;
+	float:left;
+	border:3px solid black;
+	margin-top:30px;
+	position:relative;
+	border-radius:6px;
+	padding:8px;
+	min-height:24px;
+}
+#groups ul:first-child{margin-left:0;}
+#groups ul:last-child{margin-right:0;}
+
+#groups li:first-child{border-top:0;}
+#groups li{border-top: 1px dashed #ccc;}
+
+/*#groups ul:empty{
+	background:blue;
+}*/
+
+#groups ul li{
+	line-height:200%;
+}
+
+#groups ul:before{
+	font-weight:bold;
+	content: attr(name);
+	font-size:14pt;
+	text-align:center;
+	position:absolute;
+	height:20px;
+	line-height:20px;
+	width:100%;
+	top:-26px;
+	left:0;
+}
+
+#groups ul:nth-child(5n+1){border-color:#DF151A !important}
+#groups ul:nth-child(5n+1):before{color:#DF151A !important;}
+
+#groups ul:nth-child(5n+2){border-color:#FD8603 !important}
+#groups ul:nth-child(5n+2):before{color:#FD8603 !important;}
+
+#groups ul:nth-child(5n+3){border-color:#F4F328 !important}
+#groups ul:nth-child(5n+3):before{color:#F4F328 !important;}
+
+#groups ul:nth-child(5n+4){border-color:#00DA3C !important}
+#groups ul:nth-child(5n+4):before{color:#00DA3C !important;}
+
+#groups ul:nth-child(5n+5){border-color:#00CBE7 !important}
+#groups ul:nth-child(5n+5):before{color:#00CBE7 !important;}
+
+#pick{border:3px solid #ccc; list-style-type: none;margin:0;padding:0;border-radius:6px;}
+#pick li{float:left;display:block;padding:6px;border:1px dashed #ccc;border-radius:4px;margin:8px;text-decoration:underline}
+#pick li:hover{background:#eee;}
+
+#quiz{width:800px;margin:0 auto;margin-top:60px}
+
+h3{color:#ddd;margin:10px 0;}
+h2{color:#bbb;}
+hr{visibility:hidden;clear:both;}
+
+</style>
+<script>
+$(function() {
+    $( "ul" ).sortable({
+      connectWith: ".list"
+    }).disableSelection();
+  });
+</script>
+</head>
+
+<body>
+<div id="quiz">
+<h2>Move items into correct groups</h2>
+<div id="groups">
+<ul name="Colors" class="list"></ul>
+<ul name="Animals" class="list"></ul>
+<ul name="Fruits" class="list"></ul>
+<ul name="Vahicles" class="list"></ul>
+<ul name="Other" class="list"></ul>
+</div><hr />
+<h3>Pick up word here</h2>
+<ul id="pick" class="list">
+<li>Cat</li><li>Dog</li><li>Bird</li><li>Frog</li><li>Green</li><li>Blue</li><li>Red</li><li>Horse</li><li>Apple</li><li>Orange</li><li>Banana</li>
+<li>Strawberry</li><li>Black</li><li>White</li><li>Car</li><li>Bike</li><li>House</li><li>Street</li><li>Man</li><li>LEGO brick</li><li>Airplane</li>
+<li>Boat</li><li>Subway</li><li>Watch</li><li>Lamp</li><li>Pencil</li>
+<hr />
+</ul>
+</div>
+</body>
+</html>
+ 

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+<style type="text/css">
+
+
+.c1 .marker{background:#DF151A;}
+.c5 .marker{background:#FD8603;}
+.c3 .marker{background:#F4F328;}
+.c4 .marker{background:#00DA3C;}
+.c2 .marker{background:#00CBE7;}
+
+.marker{display:inline-block;width:28px;height:28px;background:white;-webkit-mask-image: url('http://www2.psd100.com/ppp/2013/09/2601/chisel-tip-marker-icon-0926020027.png');-webkit-mask-size:28px 28px;vertical-align:middle;margin-right:6px}
+.eraser{display:inline-block;width:28px;height:28px;background:black;-webkit-mask-image: url('http://icons.iconarchive.com/icons/visualpharm/icons8-metro-style/512/Image-Edition-Tools-Eraser-icon.png');-webkit-mask-size:28px 28px;vertical-align:middle;margin-right:6px;}
+.markers{list-style-type:none;margin:0;padding:0;background:#f5f5f5;}
+.markers a{display:block;text-decoration:none;}
+.markers li{font-weight:bold;float:left;margin:0 8px;padding:8px;}
+
+.markers .c0 a{color: black;}
+.markers .c1 a{color: #DF151A;}
+.markers .c5 a{color: #FD8603;}
+.markers .c3 a{color: #F4F328;}
+.markers .c4 a{color: #00DA3C;}
+.markers .c2 a{color: #00CBE7;}
+
+.active.c0{background:black}
+.active.c0 a{color:white;}
+.active.c0 .eraser{background:white;}
+
+.active.c1{background:#DF151A;color:white;}
+.active.c1 a{color:white;}
+.active.c1 .marker{background:white;}
+
+.active.c5{background:#FD8603;color:white;}
+.active.c5 a{color:white;}
+.active.c5 .marker{background:white;}
+
+.active.c3{background:#F4F328;color:white;}
+.active.c3 a{color:white;}
+.active.c3 .marker{background:white;}
+
+
+.active.c4{background:#00DA3C;color:white;}
+.active.c4 a{color:white;}
+.active.c4 .marker{background:white;}
+
+.active.c2{background:#00CBE7;color:white;}
+.active.c2 a{color:white;}
+.active.c2 .marker{background:white;}
+
+
+hr{clear:both;visibility:hidden;height:0;width:0;border:0;margin:0;padding:0;}
+
+#quiz{width:900px;margin:0 auto;margin-top:60px;}
+
+#text{font-size:16pt;margin:0;margin-top:20px;}
+#text span{border-bottom:2px solid white;padding:0 0px;line-height:cals(150% - 2px);}
+
+#text span.c1{border-color:#DF151A !important;}
+#text span.c5{border-color:#FD8603 !important;}
+#text span.c3{border-color:#F4F328 !important;}
+#text span.c4{border-color:#00DA3C !important;}
+#text span.c2{border-color:#00CBE7 !important;}
+
+#text span.i0{border-color:white !important;}
+#text span.i1{border-bottom:2px dashed #DF151A !important;}
+#text span.i5{border-bottom:2px dashed #FD8603 !important;}
+#text span.i3{border-bottom:2px dashed #F4F328 !important;}
+#text span.i4{border-bottom:2px dashed #00DA3C !important;}
+#text span.i2{border-bottom:2px dashed #00CBE7 !important;}
+
+
+#text {line-height:150%;cursor:text}
+</style>
+</head>
+<script>
+var tool = null;
+var selectionStart = null;
+
+function setTool(newTool){
+	if(tool != null){
+		$('#tool'+tool).removeClass('active');
+	}
+	if(tool != newTool){
+		tool = newTool
+		$('#tool'+tool).addClass('active');
+	}else 
+		tool = null;
+	
+	console.log(tool);
+}
+
+function initTools(tools){
+	tools.unshift('Clear');
+	for(var i=0;i<tools.length;i++){
+		var li = $('<li></li>');
+		li.attr('id', 'tool'+i);
+		li.attr('class', 'c'+i);
+		var a = $('<a></a>');
+		a.attr('href', 'javascript:void(null)');
+		a.click(function(id){return function(){setTool(id);};}(i));
+		
+		if(i == 0)a.append('<span class="eraser"></span>');
+		else a.append('<span class="marker"></span>');
+		
+		a.append(document.createTextNode(tools[i]));
+		
+		li.append(a);
+		$('.markers').append(li);
+	}
+}
+
+function setSelection(a, b, istmp){
+	console.log(a,b,istmp);
+	$('#text span').removeClass('i'+tool);
+	if(a == null || b == null)
+		return;
+	if(a>b){
+		var c = a;
+		a = b; b = c;
+	}
+	
+	
+	
+	if(istmp == true){
+		for(var i=a;i<=b;i++)
+			$('#s'+i).addClass('i'+tool);
+	}else{
+		for(var i=a;i<=b;i++)
+			$('#s'+i).attr('class', (tool>0?'c'+tool:''));
+	}
+}
+
+
+function initText(){
+	var r = /\b(\w+)\b/ig;
+	var iz = 0;
+	$('#text p').each(function(idx, obj){
+		console.log($(obj).text());
+		var txt = $(obj).text();
+		var html = txt.replace(r, function(match, p1, offset){
+			return '<span id="s'+(iz++)+'">'+match+'</span>';
+			
+		});
+		$(obj).html(html);
+	});
+	
+	$('#text span').click(function(event){
+		if(tool == 0)
+			$(this).attr('class', '');
+		else $(this).attr('class', 'c'+tool);
+	});
+	
+	$('#text span').on('mousedown', function(event){
+		selectionStart = parseInt($(this).attr('id').substr(1));
+	}).on('mouseenter', function(event){
+		setSelection(selectionStart, parseInt($(this).attr('id').substr(1)), true);
+	
+	}).on('mouseleave', function(event){
+		//setSelection(selectionStart, parseInt($(this).attr('id')), true);
+	}).on('mouseup', function(event){
+		setSelection(selectionStart, parseInt($(this).attr('id').substr(1)), false);
+	});
+	
+	$(document.body).on('mouseup', function(){
+		selectionStart = null;
+	});
+}
+
+$(function(){
+	initTools(['Mark a noun', 'Mark a verb', 'Mark an article', 'Mark an adjective']);
+	initText();
+	$('#text').disableSelection();
+});
+</script>
+<body>
+<div id="quiz">
+<h1>Marker Quiz</h1>
+<ul class="markers"></ul>
+<hr/>
+<div id="text">
+<p>The rumour that lions always lie around for more than 20 hours out of 24 is another pub quiz favourite.</p>
+
+<p>The big cats, like their small domestic cousins, are cathemeral, meaning they take short, sporadic naps regardless of the amount of light so they can take advantage of a good meal at any time.</p>
+
+<p>But in a study of lions in South Africa, researchers found the cats were only resting for around 14 hours of their day.</p>
+
+<p>The scientists suggested that the lions in Addo National Park were more active because they didn't have an established pride, so spent more time on the lookout for danger from competing lions or trampling elephants.</p>
+
+</div>
+</div>
+</body>
+</html>
