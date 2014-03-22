@@ -1,7 +1,9 @@
 moodle-quiz
 ===========
 
-Some ideas about new moodle quizes:
+Some ideas about new moodle quizes. 
+
+Warning: There are only prototypes for some ideas. They were only tested in Google Chrome Browser.
 
 ## Matcher
 
